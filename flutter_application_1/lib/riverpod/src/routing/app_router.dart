@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/riverpod/src/notifiers/auth_notifier.dart';
 import 'package:flutter_application_1/riverpod/src/providers/auth_providers.dart';
+import 'package:flutter_application_1/riverpod/src/utils/extensions.dart';
 import 'package:flutter_application_1/riverpod/src/views/home_dashboard_views/overview_view.dart';
 import 'package:flutter_application_1/riverpod/src/views/home_dashboard_views/settings_view.dart';
 import 'package:flutter_application_1/riverpod/src/views/home_dashboard_views/weather/weather_overview.dart';
 import 'package:flutter_application_1/riverpod/src/views/home_dashboard_views/weather/weather_view.dart';
 import 'package:flutter_application_1/riverpod/src/views/login.dart';
 import 'package:flutter_application_1/riverpod/src/views/verification_view.dart';
-import 'package:flutter_application_1/riverpod/src/widgets/logged_in_widgets.dart';
+import 'package:flutter_application_1/riverpod/src/widgets/logged_in_layout_builder.dart';
+import 'package:flutter_application_1/riverpod/src/widgets/logged_in_bttm_nav_bar.dart';
+import 'package:flutter_application_1/riverpod/src/widgets/logged_in_drawer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -198,18 +201,18 @@ class AppRouter {
     final currentRoute = goRouterState.location;
     final isAuthRoute = _isAuthenticatedRoute(currentRoute);
     final isVerifiedRoute = _isVerifiedRoute(currentRoute);
-    final toMount = _AppLayoutBuilder(
+    final toMount = AppOverlayBuilder(
       goRouterState: goRouterState,
       child: child!,
-      appLayout: () {
+      appOverlayType: () {
         if (isAuthRoute) {
           if (isVerifiedRoute) {
-            return _AppLayout.verified;
+            return AppOverlayType.verified;
           } else {
-            return _AppLayout.unverified;
+            return AppOverlayType.unverified;
           }
         } else {
-          return _AppLayout.loggedOff;
+          return AppOverlayType.loggedOff;
         }
       }(),
     );
@@ -244,68 +247,92 @@ extension _ListExtension on List<String> {
       indexWhere((element) => route.startsWith(element)) > -1;
 }
 
-enum _AppLayout { loggedOff, unverified, verified }
+enum AppOverlayType { loggedOff, unverified, verified }
 
-extension _AppLayoutExtension on _AppLayout {
-  bool get isLoggedOff => this == _AppLayout.loggedOff;
-  bool get isUnverified => this == _AppLayout.unverified;
-  bool get isVerified => this == _AppLayout.verified;
+extension AppLayoutExtension on AppOverlayType {
+  bool get isLoggedOff => this == AppOverlayType.loggedOff;
+  bool get isUnverified => this == AppOverlayType.unverified;
+  bool get isVerified => this == AppOverlayType.verified;
 }
 
-class _AppLayoutBuilder extends ConsumerWidget {
+class AppOverlayBuilder extends StatelessWidget {
   final Widget child;
-  final _AppLayout appLayout;
+  final AppOverlayType appOverlayType;
   final GoRouterState goRouterState;
 
-  const _AppLayoutBuilder({
+  const AppOverlayBuilder({
     Key? key,
     required this.child,
-    required this.appLayout,
+    required this.appOverlayType,
     required this.goRouterState,
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, ref) {
-    ref.listen<AuthState>(authNotifierProvider,
-        (previous, next) => _listener(previous, next, context));
-    switch (appLayout) {
-      case _AppLayout.loggedOff:
-        return child;
-      case _AppLayout.unverified:
-      case _AppLayout.verified:
-        return LayoutBuilder(
+  Widget build(BuildContext context) {
+    return Navigator(
+      key: goRouterState.pageKey,
+      onPopPage: (_, __) => false,
+      pages: [
+        MaterialPage(
           key: goRouterState.pageKey,
-          builder: (_, constraints) {
-            final bool showDesktopLayout = constraints.maxWidth >= 1028;
-            final showNavigation = appLayout.isVerified;
-            final currentRoute = goRouterState.location;
-            return Overlay(
-              key: goRouterState.pageKey,
-              initialEntries: [
-                OverlayEntry(
-                  builder: (_) => Scaffold(
-                    appBar: AppBar(
-                      title: Text(currentRoute),
-                      actions: [
-                        if (showNavigation && showDesktopLayout) ...[
-                          _AppBarNavItem.overview(currentRoute: currentRoute),
-                          _AppBarNavItem.weather(currentRoute: currentRoute),
-                          _AppBarNavItem.settings(currentRoute: currentRoute),
-                        ],
-                      ],
-                    ),
-                    body: child,
-                    drawer: const LoggedInDrawer(),
-                    bottomNavigationBar: showNavigation && !showDesktopLayout
-                        ? const LoggedInBottomNavBar()
-                        : null,
-                  ),
-                ),
-              ],
+          child: () {
+            return Consumer(
+              builder: (context, ref, child) {
+                ref.listen<AuthState>(
+                  authNotifierProvider,
+                  (previous, next) => _listener(previous, next, context),
+                );
+                return child!;
+              },
+              child: () {
+                switch (appOverlayType) {
+                  case AppOverlayType.loggedOff:
+                    return child;
+                  case AppOverlayType.unverified:
+                  case AppOverlayType.verified:
+                    return LoggedInLayoutBuilder(
+                      goRouterState: goRouterState,
+                      appOverlayType: appOverlayType,
+                      child: child,
+                    );
+                }
+              }(),
             );
-          },
-        );
-    }
+          }(),
+        ),
+      ],
+    );
+    // return Overlay(
+    //   key: goRouterState.pageKey,
+    //   initialEntries: [
+    //     OverlayEntry(
+    //       builder: (context) {
+    //         return Consumer(
+    //           builder: (context, ref, child) {
+    //             ref.listen<AuthState>(
+    //               authNotifierProvider,
+    //               (previous, next) => _listener(previous, next, context),
+    //             );
+    //             return child!;
+    //           },
+    //           child: () {
+    //             switch (appOverlayType) {
+    //               case AppOverlayType.loggedOff:
+    //                 return child;
+    //               case AppOverlayType.unverified:
+    //               case AppOverlayType.verified:
+    //                 return LoggedInLayoutBuilder(
+    //                   goRouterState: goRouterState,
+    //                   appOverlayType: appOverlayType,
+    //                   child: child,
+    //                 );
+    //             }
+    //           }(),
+    //         );
+    //       },
+    //     ),
+    //   ],
+    // );
   }
 
   void _listener(AuthState? previous, AuthState? next, BuildContext context) {
@@ -324,49 +351,5 @@ class _AppLayoutBuilder extends ConsumerWidget {
         },
       );
     }
-  }
-}
-
-class _AppBarNavItem extends StatelessWidget {
-  final String label;
-  final String routeToNavTo;
-  final bool isSelected;
-  const _AppBarNavItem({
-    Key? key,
-    required this.label,
-    required this.routeToNavTo,
-    required String currentRoute,
-  })  : isSelected = currentRoute == routeToNavTo,
-        super(key: key);
-  const _AppBarNavItem.overview({
-    Key? key,
-    required String currentRoute,
-  })  : label = 'Overview',
-        routeToNavTo = AppRouter.overviewRoute,
-        isSelected = AppRouter.overviewRoute == currentRoute,
-        super(key: key);
-  const _AppBarNavItem.weather({
-    Key? key,
-    required String currentRoute,
-  })  : label = 'Weather',
-        routeToNavTo = AppRouter.weatherOverviewRoute,
-        isSelected = AppRouter.weatherOverviewRoute == currentRoute,
-        super(key: key);
-  const _AppBarNavItem.settings({
-    Key? key,
-    required String currentRoute,
-  })  : label = 'Settings',
-        routeToNavTo = AppRouter.settingsRoute,
-        isSelected = AppRouter.settingsRoute == currentRoute,
-        super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      style: TextButton.styleFrom(
-          primary: context.theme.isLightMode ? Colors.white : null),
-      onPressed: isSelected ? null : () => context.go(routeToNavTo),
-      child: Text(label),
-    );
   }
 }

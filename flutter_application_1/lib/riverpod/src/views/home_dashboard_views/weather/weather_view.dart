@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/riverpod/extensions.dart';
 import 'package:flutter_application_1/riverpod/src/models/weather.dart';
 import 'package:flutter_application_1/riverpod/src/providers/repo_providers.dart';
+import 'package:flutter_application_1/riverpod/src/utils/extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class WeatherView extends ConsumerWidget {

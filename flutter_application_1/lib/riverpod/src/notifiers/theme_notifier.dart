@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/riverpod/src/utils/extensions.dart';
 import 'package:riverpod/riverpod.dart';
 
 class ThemeNotifier extends StateNotifier<ThemeMode> {
@@ -15,10 +16,4 @@ class ThemeNotifier extends StateNotifier<ThemeMode> {
       }
     }
   }
-}
-
-extension ThemeModeExtension on ThemeMode {
-  bool get isLightMode => this == ThemeMode.light;
-  bool get isDarkMode => this == ThemeMode.dark;
-  bool get isSysteMode => this == ThemeMode.system;
 }

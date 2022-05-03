@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/riverpod/extensions.dart';
 import 'package:flutter_application_1/riverpod/src/routing/app_router.dart';
+import 'package:flutter_application_1/riverpod/src/utils/extensions.dart';
 import 'package:flutter_application_1/riverpod/src/widgets/buttons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:responsive_framework/responsive_framework.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/riverpod/extensions.dart';
 import 'package:flutter_application_1/riverpod/src/routing/app_router.dart';
+import 'package:flutter_application_1/riverpod/src/utils/extensions.dart';
 import 'package:go_router/go_router.dart';
 
 class WeatherOverviewView extends StatelessWidget {
@@ -87,9 +87,13 @@ class CityWeatherIcon extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Expanded(
-                        child: SingleChildScrollView(
-                            child: Text(initials,
-                                style: context.textTheme.headline1))),
+                      child: SingleChildScrollView(
+                        child: Text(
+                          initials,
+                          style: context.textTheme.headline1,
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     Text(label),
                   ],
