@@ -60,7 +60,11 @@ class AppRouter {
     }
   }
   late final GoRouter _goRouter = GoRouter(
+    /// notifies the Router that there an event
+    /// has been triggered
     refreshListenable: _notifier,
+
+    /// routes for the application
     routes: [
       GoRoute(
         path: '/',
@@ -123,7 +127,14 @@ class AppRouter {
         ],
       )
     ],
+
+    /// can build a frame around the current view
     navigatorBuilder: _navigatorBuilder,
+
+    /// will redirect when user is not in the correct
+    /// route, and needs to be rerouted
+    /// triggered when an attempt to navigation is made
+    /// or refreshListenable registers an event
     redirect: _redirect,
     debugLogDiagnostics: true,
   );
@@ -151,16 +162,22 @@ class AppRouter {
   bool _isUnverifiedRoute(String route) =>
       unverifiedRoutes.containsRoute(route);
 
+  /// when we return a String, the user will be
+  /// rerouted to that url
+  /// * note when returns String, this will be called
+  /// again since navigation is being requested
   String? _redirect(GoRouterState goRouterState) {
     final currentRoute = goRouterState.location;
     final currentAuthState = _notifier.value;
     final isUnverifiedRoute = _isUnverifiedRoute(currentRoute);
     final isVerifiedRoute = _isVerifiedRoute(currentRoute);
-    final isUnauthenticatedRoute = _isUnauthenticatedRoute(currentRoute);
+    final isAuthenticatedRoute = isUnverifiedRoute || isVerifiedRoute;
     return currentAuthState.map<String?>(
       unknown: (_) => null,
       loggedOut: (_) {
-        if (!isUnauthenticatedRoute) {
+        // if logged out, but in an authenticated route
+        // reroute them to the Login Screen
+        if (isAuthenticatedRoute) {
           return AppRouter.loginRoute;
         }
       },
@@ -168,10 +185,14 @@ class AppRouter {
         final isVerified = loggedInState.isVerified;
 
         if (isVerified) {
+          // if verified, but not in a verified route
+          // then reroute them to the overview screen
           if (!isVerifiedRoute) {
             return AppRouter.overviewRoute;
           }
         } else {
+          // if not verified and not in verification screen,
+          // then reroute then to verification screen
           if (!isUnverifiedRoute) {
             return AppRouter.verificationRoute;
           }
@@ -269,6 +290,8 @@ class AppOverlayBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // based on limitation of GoRouter need to
+    // wrap app in Navigator
     return Navigator(
       key: goRouterState.pageKey,
       onPopPage: (_, __) => false,
@@ -302,37 +325,6 @@ class AppOverlayBuilder extends StatelessWidget {
         ),
       ],
     );
-    // return Overlay(
-    //   key: goRouterState.pageKey,
-    //   initialEntries: [
-    //     OverlayEntry(
-    //       builder: (context) {
-    //         return Consumer(
-    //           builder: (context, ref, child) {
-    //             ref.listen<AuthState>(
-    //               authNotifierProvider,
-    //               (previous, next) => _listener(previous, next, context),
-    //             );
-    //             return child!;
-    //           },
-    //           child: () {
-    //             switch (appOverlayType) {
-    //               case AppOverlayType.loggedOff:
-    //                 return child;
-    //               case AppOverlayType.unverified:
-    //               case AppOverlayType.verified:
-    //                 return LoggedInLayoutBuilder(
-    //                   goRouterState: goRouterState,
-    //                   appOverlayType: appOverlayType,
-    //                   child: child,
-    //                 );
-    //             }
-    //           }(),
-    //         );
-    //       },
-    //     ),
-    //   ],
-    // );
   }
 
   void _listener(AuthState? previous, AuthState? next, BuildContext context) {
