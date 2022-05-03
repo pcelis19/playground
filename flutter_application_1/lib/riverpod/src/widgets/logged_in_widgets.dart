@@ -136,7 +136,7 @@ class LoggedInBottomNavBar extends StatelessWidget {
       return 0;
     }
 
-    if (route == AppRouter.weatherOverviewRoute) {
+    if (route.contains(AppRouter.weatherOverviewRoute)) {
       return 1;
     }
     if (route == AppRouter.settingsRoute) {
