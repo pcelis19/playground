@@ -10,6 +10,9 @@ final authNotifierProvider =
     StateNotifierProvider<AuthStateNotifier, AuthState>(
         (ref) => AuthStateNotifier.init(ref.read));
 
+/// provides the application the ability to manipulate the
+/// current user, while providing state on those operations
+/// and their results
 final userStateNotifierProvider =
     StateNotifierProvider<UserStateNotifier, UserState>(
   (ref) {
@@ -23,6 +26,8 @@ final userStateNotifierProvider =
   },
 );
 
+/// offers the [HttpClient] for the application, that has the required
+/// headers based on the current [AuthState]
 final httpClientProvider = Provider<HttpClient>(
   (ref) {
     final authState = ref.watch(authNotifierProvider);

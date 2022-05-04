@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/riverpod/src/models/data_request.dart';
 import 'package:flutter_application_1/riverpod/src/models/weather.dart';
 import 'package:flutter_application_1/riverpod/src/providers/repo_providers.dart';
 import 'package:flutter_application_1/riverpod/src/utils/extensions.dart';

@@ -6,15 +6,15 @@ import 'package:flutter_application_1/riverpod/src/repositories/using_external/w
 import 'package:flutter_application_1/riverpod/src/repositories/repository_interface.dart';
 import 'package:riverpod/riverpod.dart';
 
-///
+/// The authentication repo
 final authRepoProvider =
     Provider<IAuthRepository>((ref) => MockAuthRepository(ref.read));
 
-///
+/// The user repository
 final userRepoProvider =
     Provider<IUserRepository>((ref) => MockUserRepository(ref.read));
 
-///
+/// The weather repo
 final weatherRepoProvider = Provider<IWeatherRepository>(
   (ref) {
     final fetchFromLive = ref.watch(fetchFromLiveDataStateProvider);
